@@ -11,17 +11,22 @@ class Post extends Model
 
     public function getRouteKeyName()
     {
-        return 'slug'; // Use 'slug' instead of 'id' for URLs
+        return 'slug'; // Use 'slug' for URLs
     }
 
     protected $fillable = [
         'title', 'slug', 'content', 'excerpt',
         'status', 'user_id', 'views', 'published_at',
-        'image' // Added image field
+        'image', 'category_id', 'post_type'  // New columns added!
     ];
 
     public function tags()
     {
         return $this->belongsToMany(Tag::class);
+    }
+
+    public function category()
+    {
+        return $this->belongsTo(Category::class);
     }
 }
