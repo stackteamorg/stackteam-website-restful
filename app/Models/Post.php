@@ -29,4 +29,31 @@ class Post extends Model
     {
         return $this->belongsTo(Category::class);
     }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    protected $appends = ['category_name', 'category_slug', 'user_name'];
+
+    public function getCategoryNameAttribute()
+    {
+        return $this->category ? $this->category->name : null;
+    }
+
+    public function getCategorySlugAttribute()
+    {
+        return $this->category ? $this->category->slug : null;
+    }
+
+    public function getUserNameAttribute()
+    {
+        return $this->user ? $this->user->name : null;
+    }
+
+    // Hide unnecessary fields
+    protected $hidden = ['user', 'category_id', 'user_id', 'category'];
+
+
 }

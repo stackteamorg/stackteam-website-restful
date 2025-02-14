@@ -13,7 +13,8 @@ class PostController extends Controller
     public function index(Request $request)
     {
         // Paginate the posts with 12 posts per page
-        $posts = Post::with('tags')->paginate(12);
+        $posts = Post::with(['tags', 'category:id,name,slug'])->paginate(12);
+
 
         return response()->json($posts);
     }
@@ -56,7 +57,7 @@ class PostController extends Controller
 
     public function show(Post $post)
     {
-        return $post->load('tags');
+        return response()->json($post->load('tags', 'category:id,name,slug'));
     }
 
     public function update(Request $request, Post $post)
