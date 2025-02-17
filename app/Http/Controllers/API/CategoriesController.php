@@ -35,9 +35,13 @@ class CategoriesController extends Controller
     /**
      * نمایش جزئیات یک دسته‌بندی خاص
      */
+    /**
+     * نمایش جزئیات یک دسته‌بندی خاص (ID یا Slug)
+     */
     public function show($identifier): JsonResponse
     {
-        $category = Category::where('id', $identifier)
+        $category = Category::withCount('posts')
+            ->where('id', $identifier)
             ->orWhere('slug', $identifier)
             ->firstOrFail();
 

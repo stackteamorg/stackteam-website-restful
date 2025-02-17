@@ -19,7 +19,10 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => [env('FRONTEND_URL', 'http://localhost:3000')],
+    'allowed_origins' => [
+        'https://stackteam.org', // Production frontend
+        'http://localhost:3000'  // Optional: Keep for local dev
+    ],
 
     'allowed_origins_patterns' => [],
 

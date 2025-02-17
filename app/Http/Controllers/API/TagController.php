@@ -21,4 +21,19 @@ class TagController extends Controller
                 ];
             });
     }
+
+    // New method to get tag by slug
+    public function showBySlug($slug)
+    {
+        $tag = Tag::where('slug', $slug)
+            ->withCount('posts')
+            ->firstOrFail();
+
+        return [
+            'name' => $tag->name,
+            'slug' => $tag->slug,
+            'post_count' => $tag->posts_count,
+            'created_at' => $tag->created_at
+        ];
+    }
 }

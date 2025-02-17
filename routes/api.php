@@ -22,15 +22,15 @@ use App\Http\Controllers\Auth\AuthenticatedSessionController;
 
 // Public routes
 Route::get('/popular-tags', [TagController::class, 'popularTags']);
+Route::get('/tag/{slug}', [TagController::class, 'showBySlug']);
 Route::get('/popular-posts', [PostController::class, 'popularPosts']);
 Route::get('/pinned-posts', [PinnedPostController::class, 'getPinned']);
 Route::get('/top-bar', [TopBarController::class, 'index'])->name('top-bar.index');
 Route::get('/posts/{post}', [PostController::class, 'show']);
 Route::get('/posts', [PostController::class, 'index']);
 Route::get('/posts/category/{category}', [PostController::class, 'postsByCategory']);
+Route::get('category/{identifier}', [CategoriesController::class, 'show']);
 Route::get('/posts/tag/{tag}', [PostController::class, 'postsByTag']);
-
-// Category Public Routes
 Route::prefix('categories')->group(function () {
     Route::get('/', [CategoriesController::class, 'index']);
     Route::get('/{identifier}', [CategoriesController::class, 'show']);
