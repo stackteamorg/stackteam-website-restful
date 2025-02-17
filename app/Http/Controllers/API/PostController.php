@@ -52,6 +52,18 @@ class PostController extends Controller
             $post->tags()->sync($request->tags);
         }
 
+        if ($request->has('open_graph')) {
+            $ogData = $request->input('open_graph');
+
+            // Process OG image if provided as a file
+            if ($request->hasFile('open_graph.og_image')) {
+                $ogImagePath = $this->handleImageUpload($request->file('open_graph.og_image'));
+                $ogData['og_image'] = $ogImagePath;
+            }
+
+            $post->openGraph()->create($ogData);
+        }
+
         return response()->json($post->load('tags', 'category'), 201);
     }
 
@@ -89,6 +101,23 @@ class PostController extends Controller
         // Update tags if provided
         if ($request->has('tags')) {
             $post->tags()->sync($request->tags);
+        }
+
+        if ($request->has('open_graph')) {
+            $ogData = $request->input('open_graph');
+
+            if ($post->openGraph) {
+                // Process new OG image file if provided
+                if ($request->hasFile('open_graph.og_image')) {
+                    Storage::delete($post->openGraph->og_image);
+                    $ogImagePath = $this->handleImageUpload($request->file('open_graph.og_image'));
+                    $ogData['og_image'] = $ogImagePath;
+                }
+                $post->openGraph()->update($ogData);
+            } else {
+                // Create new OG record if it doesn't exist
+                $post->openGraph()->create($ogData);
+            }
         }
 
         return response()->json($post->load('tags', 'category'));

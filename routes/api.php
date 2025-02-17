@@ -6,7 +6,6 @@ use App\Http\Controllers\API\TagController;
 use App\Http\Controllers\API\CategoriesController;
 use App\Http\Controllers\API\PinnedPostController;
 use App\Http\Controllers\API\TopBarController;
-use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 
 /*

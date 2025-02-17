@@ -35,7 +35,12 @@ class Post extends Model
         return $this->belongsTo(User::class);
     }
 
-    protected $appends = ['category_name', 'category_slug', 'user_name'];
+    protected $appends = ['category_name', 'category_slug', 'user_name', 'open_graph_data'];
+
+    public function getOpenGraphDataAttribute()
+    {
+        return $this->openGraph ? $this->openGraph->toArray() : null;
+    }
 
     public function getCategoryNameAttribute()
     {
@@ -55,5 +60,9 @@ class Post extends Model
     // Hide unnecessary fields
     protected $hidden = ['user', 'category_id', 'user_id', 'category'];
 
+    public function openGraph()
+    {
+        return $this->hasOne(OpenGraph::class);
+    }
 
 }
