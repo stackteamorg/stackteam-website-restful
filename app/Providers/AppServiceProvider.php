@@ -25,7 +25,7 @@ class AppServiceProvider extends ServiceProvider
             return config('app.frontend_url')."/password-reset/$token?email={$notifiable->getEmailForPasswordReset()}";
         });
         if ($this->app->environment('production')) {
-            URL::forceScheme('https'); // 👈 Critical for generating HTTPS links
+            URL::forceScheme('https');
         }
     }
 }

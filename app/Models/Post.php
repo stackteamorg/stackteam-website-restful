@@ -1,7 +1,5 @@
 <?php
-
 namespace App\Models;
-
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -9,17 +7,41 @@ class Post extends Model
 {
     use HasFactory;
 
+    /**
+     * Get the route key for the model.
+     *
+     * @return string
+     */
     public function getRouteKeyName()
     {
-        return 'slug'; // Use 'slug' for URLs
+        return 'slug'; // Default is still slug for URLs
+    }
+
+    /**
+     * Retrieve the model for a bound value.
+     *
+     * @param  mixed  $value
+     * @param  string|null  $field
+     * @return \Illuminate\Database\Eloquent\Model|null
+     */
+    public function resolveRouteBinding($value, $field = null)
+    {
+        // Check if $value is numeric (an ID) or a string (a slug)
+        if (is_numeric($value)) {
+            return $this->where('id', $value)->first();
+        }
+
+        // Otherwise, use the default slug lookup
+        return $this->where('slug', $value)->first();
     }
 
     protected $fillable = [
         'title', 'slug', 'content', 'excerpt',
         'status', 'user_id', 'views', 'published_at',
-        'image', 'category_id', 'post_type'  // New columns added!
+        'image', 'category_id', 'post_type'
     ];
 
+    // Rest of your model remains unchanged
     public function tags()
     {
         return $this->belongsToMany(Tag::class);
@@ -58,11 +80,10 @@ class Post extends Model
     }
 
     // Hide unnecessary fields
-    protected $hidden = ['user', 'category_id', 'user_id', 'category'];
+    protected $hidden = ['user', 'user_id', 'category'];
 
     public function openGraph()
     {
         return $this->hasOne(OpenGraph::class);
     }
-
 }

@@ -22,14 +22,16 @@ class PostController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'title'      => 'required|string|max:255',
-            'slug'       => 'required|string|unique:posts',
-            'content'    => 'required|string',
-            'excerpt'    => 'sometimes|string|max:300',
-            'image'      => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
-            'tags'       => 'sometimes|array',
-            'category_id'=> 'sometimes|exists:categories,id',
-            'post_type'  => 'sometimes|string|in:blog,services,technologies',
+            'title'        => 'required|string|max:255',
+            'slug'         => 'required|string|unique:posts',
+            'content'      => 'required|string',
+            'excerpt'      => 'sometimes|string|max:300',
+            'image'        => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'tags'         => 'sometimes|array',
+            'tags.*.name'  => 'required|string',
+            'tags.*.slug'  => 'required|string',
+            'category_id'  => 'sometimes|exists:categories,id',
+            'post_type'    => 'sometimes|string|in:blog,services,technologies',
         ]);
 
         // Process and store image
@@ -44,23 +46,29 @@ class PostController extends Controller
             'user_id'      => auth()->id(),
             'status'       => $request->status ?? 'draft',
             'published_at' => $request->published_at,
-            'category_id'  => $request->category_id,  // new!
-            'post_type'    => $request->post_type,    // new!
+            'category_id'  => $request->category_id,
+            'post_type'    => $request->post_type,
         ]);
 
+        // Process tags: create or retrieve each tag by its slug and name, then sync IDs
         if ($request->has('tags')) {
-            $post->tags()->sync($request->tags);
+            $tagIds = [];
+            foreach ($request->tags as $tagData) {
+                $tag = \App\Models\Tag::firstOrCreate(
+                    ['slug' => $tagData['slug']],
+                    ['name' => $tagData['name']]
+                );
+                $tagIds[] = $tag->id;
+            }
+            $post->tags()->sync($tagIds);
         }
 
         if ($request->has('open_graph')) {
             $ogData = $request->input('open_graph');
-
-            // Process OG image if provided as a file
             if ($request->hasFile('open_graph.og_image')) {
                 $ogImagePath = $this->handleImageUpload($request->file('open_graph.og_image'));
                 $ogData['og_image'] = $ogImagePath;
             }
-
             $post->openGraph()->create($ogData);
         }
 
@@ -74,6 +82,7 @@ class PostController extends Controller
 
     public function update(Request $request, Post $post)
     {
+
         $request->validate([
             'title'       => 'sometimes|string|max:255',
             'slug'        => 'sometimes|string|unique:posts,slug,'.$post->id,
@@ -81,33 +90,36 @@ class PostController extends Controller
             'excerpt'     => 'sometimes|string|max:300',
             'image'       => 'sometimes|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
             'tags'        => 'sometimes|array',
+            'tags.*.name' => 'required|string',
+            'tags.*.slug' => 'required|string',
             'category_id' => 'sometimes|exists:categories,id',
             'post_type'   => 'sometimes|string|in:blog,services,technologies',
         ]);
 
-        // Update image if new one is provided
         if ($request->hasFile('image')) {
-            // Delete old image
             Storage::delete($post->image);
-
-            // Store new image
             $imagePath = $this->handleImageUpload($request->file('image'));
             $post->image = $imagePath;
         }
 
-        // Update post fields
         $post->update($request->except('image', 'tags'));
 
-        // Update tags if provided
+        // Process tags
         if ($request->has('tags')) {
-            $post->tags()->sync($request->tags);
+            $tagIds = [];
+            foreach ($request->tags as $tagData) {
+                $tag = \App\Models\Tag::firstOrCreate(
+                    ['slug' => $tagData['slug']],
+                    ['name' => $tagData['name']]
+                );
+                $tagIds[] = $tag->id;
+            }
+            $post->tags()->sync($tagIds);
         }
 
         if ($request->has('open_graph')) {
             $ogData = $request->input('open_graph');
-
             if ($post->openGraph) {
-                // Process new OG image file if provided
                 if ($request->hasFile('open_graph.og_image')) {
                     Storage::delete($post->openGraph->og_image);
                     $ogImagePath = $this->handleImageUpload($request->file('open_graph.og_image'));
@@ -115,7 +127,6 @@ class PostController extends Controller
                 }
                 $post->openGraph()->update($ogData);
             } else {
-                // Create new OG record if it doesn't exist
                 $post->openGraph()->create($ogData);
             }
         }

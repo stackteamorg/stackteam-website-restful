@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\PostController;
 use App\Http\Controllers\API\TagController;
@@ -20,6 +21,9 @@ use App\Http\Controllers\Auth\AuthenticatedSessionController;
 */
 
 // Public routes
+Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
+    return $request->user();
+});
 Route::get('/popular-tags', [TagController::class, 'popularTags']);
 Route::get('/tag/{slug}', [TagController::class, 'showBySlug']);
 Route::get('/popular-posts', [PostController::class, 'popularPosts']);
